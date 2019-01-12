@@ -88,7 +88,7 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
 
       rpc.close(true, function () {
         aliceCancel(); bobCancel()
-        alice.publish(u.block(bob.id))
+        cont(alice.publish)(u.block(bob.id))
         (function (err) {
           if(err) throw err
 

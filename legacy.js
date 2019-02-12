@@ -44,6 +44,7 @@ module.exports = function (ssbServer, notify, config) {
   var lastProgress = null
 
   var replicate = {}
+  var blocks = {}
 
   function request (id, unfollow) {
     if(unfollow === false) {
@@ -149,10 +150,16 @@ module.exports = function (ssbServer, notify, config) {
     })
   )
 
-  var chs = ssbServer.createHistoryStream
+  var peers = {}
 
   ssbServer.createHistoryStream.hook(function (fn, args) {
-    var upto = args[0] || {}
+    var upto = args[0] || {}, remote_id = this.id
+    var stream
+    //if they are blocked, just end immediately.
+    //better would be same error as if we didn't have this feed.
+    if(blocks[upto.id] && blocks[upto.id][remote_id])
+      return function (abort, cb) { cb(true) }
+
     var seq = upto.sequence || upto.seq
     if(this._emit) this._emit('call:createHistoryStream', args[0])
 
@@ -160,8 +167,8 @@ module.exports = function (ssbServer, notify, config) {
     if(this===ssbServer) return fn.call(this, upto)
 
     // keep track of each requested value, per feed / per peer.
-    peerHas[this.id] = peerHas[this.id] || {}
-    peerHas[this.id][upto.id] = seq - 1 // peer requests +1 from actual last seq
+    peerHas[remote_id] = peerHas[remote_id] || {}
+    peerHas[remote_id][upto.id] = seq - 1 // peer requests +1 from actual last seq
 
     debounce.set()
 
@@ -177,9 +184,33 @@ module.exports = function (ssbServer, notify, config) {
       })
       pushable.push(p)
       pushable.sequence = seq
-      return p
+      stream = p
     }
-    return fn.call(this, upto)
+    else
+      stream = fn.call(this, upto)
+
+    return pull(
+      stream,
+      //this is pulled in from ssb-friends. because we decided replication should own block.
+      /*
+        edge case: if A is replicating B from C in real time as B blocks A,
+        C allows A to continue replicating B's messages, until the block message appears.
+        but would not allow A to replicate any of B on the next connection.
+        if B blocks in a private message to C, this may allow A to replicate past the block message,
+        or if B blocks A via a blocklist, there may be no message.
+        this is still currently good enough but will need to change in the future.
+      */
+      pull.take(function (msg) {
+        //handle when createHistoryStream is called with keys: true
+        if(!msg.content && msg.value.content)
+          msg = msg.value
+        if(msg.content.type !== 'contact') return true
+        return !(
+          (msg.content.flagged || msg.content.blocking) &&
+          msg.content.contact === remote_id
+        )
+      })
+    )
   })
 
   // collect the IDs of feeds we want to request
@@ -348,7 +379,16 @@ module.exports = function (ssbServer, notify, config) {
   return {
     request: request,
     upto: upto,
-    changes: notify.listen
+    changes: notify.listen,
+    block: function (from, to, blocking) {
+      if(blocking) {
+        blocks[from] = blocks[from] || {}
+        blocks[from][to] = blocking
+      }
+      else if (blocks[from]) {
+        delete blocks[from][to]
+      }
+    }
   }
 }
 

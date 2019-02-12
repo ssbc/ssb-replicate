@@ -27,6 +27,7 @@ module.exports = {
     else
       return {
         request: function () {},
+        block: function (from, to, blocking) {},
         changes: function () { return function (abort, cb) { cb(true) } }
       }
   }

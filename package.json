@@ -1,7 +1,7 @@
 {
   "name": "ssb-replicate",
   "description": "",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "homepage": "https://github.com/dominictarr/ssb-replicate",
   "repository": {
     "type": "git",

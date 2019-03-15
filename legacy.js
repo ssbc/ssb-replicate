@@ -47,6 +47,10 @@ module.exports = function (ssbServer, notify, config) {
   var blocks = {}
 
   function request (id, unfollow) {
+    if(isObject(id)) {
+      unfollow = id.replicate
+      id = id.id
+    }
     if(unfollow === false) {
       if(replicate[id]) {
         delete replicate[id]

@@ -28,7 +28,7 @@ var sbot = createSSB({config...})
 
 ## api
 
-### replicate.request(feedId, replicate) : sync
+### replicate.request({id:feedId, replicate:replicate}) : sync
 
 request that `feedId` be replicated (or not if `replicate` is false.
 will begin or end replication on any currently open connections.

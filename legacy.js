@@ -15,6 +15,10 @@ function toSeq (s) {
   return 'number' === typeof s ? s : s.sequence
 }
 
+function isObject (o) {
+  return o && 'object' == typeof o
+}
+
 function last (a) { return a[a.length - 1] }
 
 // if one of these shows up in a replication stream, the stream is dead

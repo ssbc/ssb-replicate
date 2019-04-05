@@ -32,4 +32,4 @@ or request(id, false) to disable replication.
 
 ## block: sync
 
-call when `from` blocks `to`: `block(from, to, isBlocking)`. 
+call when `from` blocks `to`: `block(from, to, isBlocking)`.

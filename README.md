@@ -33,12 +33,19 @@ var sbot = createSSB({config...})
 request that `feedId` be replicated (or not if `replicate` is false.
 will begin or end replication on any currently open connections.
 
-### replicate.changes : soruce
+### replicate.changes : source
 
 get a feed of replication progress.
+
+### replicate.block : sync
+
+call when from blocks to: block(from, to, isBlocking).
+
+### replicate.upto : source
+
+returns {} of feeds to replicate, with sequences.
+
 
 ## License
 
 MIT
-
-

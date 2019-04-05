@@ -8,6 +8,8 @@ peers replicate by calling `createHistoryStream({id, seq})` for every feed to be
 (if `replicate.request({id: <id>, replicate: true})` has been called - this is usually handled
 by `ssb-friends`). (`id` is the replicated feed id, and seq is the latest sequence number a peer has)
 
+see [the protocol guide](https://ssbc.github.io/scuttlebutt-protocol-guide/#createHistoryStream)
+
 Since an ssb peer may replicate thousands of feeds, just making all these calls to `createHistoryStream`
 can use quite a bit of bandwidth (and cpu on the receiving end) thus this module has been superceded
 by [ssb-ebt](https://github.com/ssbc/ssb-ebt). but this is still included so for interop with other

@@ -28,7 +28,10 @@ module.exports = {
       return {
         request: function () {},
         block: function (from, to, blocking) {},
-        changes: function () { return function (abort, cb) { cb(true) } }
+        changes: function () { return function (abort, cb) { cb(true) } },
+        help: function () {
+          return require('./help')
+        }
       }
   }
 }

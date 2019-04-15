@@ -389,6 +389,11 @@ module.exports = function (ssbServer, notify, config) {
     upto: upto,
     changes: notify.listen,
     block: function (from, to, blocking) {
+      if(isObject(from)) {
+        to = from.to
+        blocking = from.blocking
+        from = from.from
+      }
       if(blocking) {
         blocks[from] = blocks[from] || {}
         blocks[from][to] = blocking
@@ -396,6 +401,9 @@ module.exports = function (ssbServer, notify, config) {
       else if (blocks[from]) {
         delete blocks[from][to]
       }
+    },
+    help: function () {
+      return require('./help')
     }
   }
 }

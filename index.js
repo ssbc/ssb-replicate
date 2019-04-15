@@ -9,7 +9,8 @@ var pull = require('pull-stream')
 module.exports = {
   name: 'replicate',
   version: '2.0.0',
-  manifest: mdm.manifest(fs.readFileSync(path.join(__dirname, 'api.md'), 'utf8')),
+  manifest: require('./manifest.json'),
+//mdm.manifest(fs.readFileSync(path.join(__dirname, 'api.md'), 'utf8')),
   //replicate: replicate,
   init: function (ssbServer, config) {
     var notify = Notify(), upto
@@ -35,4 +36,5 @@ module.exports = {
       }
   }
 }
+
 

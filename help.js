@@ -18,6 +18,8 @@ module.exports = {
 
     },
     block: {
+      type: 'sync',
+      description: 'block or unblock replication of a feed',
       args: {
         from: {
           type: 'FeedId',
@@ -32,6 +34,21 @@ module.exports = {
           description: 'wether this is a block or unblock, defaults to unblock (false)'
         }
       }
+    },
+    upto: {
+      type: 'source',
+      description: 'stream {id, sequence} tuples of the sequence you are up to for every feed',
+      args: {
+        live: {
+          type: 'boolean',
+          description: 'include real time changes to replication state, such as new feeds followed'
+        }
+      }
+    },
+    changes: {
+      type: 'source',
+      description: 'stream of replication change events, recommend polling sbot.progress instead',
+      args: {}
     }
   }
 }

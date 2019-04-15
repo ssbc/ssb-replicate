@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "deep-equal": "^1.0.1",
-    "mdmanifest": "^1.0.8",
     "observ-debounce": "^1.1.1",
     "obv": "0.0.1",
     "pull-cat": "^1.1.11",
@@ -36,3 +35,4 @@
   "author": "Dominic Tarr <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"
 }
+

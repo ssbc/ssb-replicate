@@ -246,6 +246,11 @@ module.exports = function (ssbServer, notify, config) {
     if(int.unref) int.unref()
     localPeers()
   }
+
+  ssbServer.close.hook(function (fn, args) {
+    clearInterval(int)
+    return fn.apply(this, args)
+  })
   //XXX ^
 
   function upto (opts) {

@@ -37,7 +37,7 @@ var sbot = createSSB({config...})
                      // if set to false, another plugin must provide replication.
                      // (such as ssb-ebt)
     fallback: boolean, //if enabled, wait for another plugin to try to replicate first.
-                      //if set will not start to replacte until replicate:fallback event is emitted on the rpc connection.
+                       //if set will not start to replicate until replicate:fallback event is emitted on the rpc connection.
   }
 }
 

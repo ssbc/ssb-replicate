@@ -20,9 +20,9 @@
     "ssb-ref": "^2.13.9"
   },
   "devDependencies": {
-    "cat-names": "^2.0.0",
+    "cat-names": "^3.0.0",
     "cont": "^1.0.3",
-    "dog-names": "^1.0.2",
+    "dog-names": "^2.0.0",
     "ssb-friends": "^4.0.0",
     "ssb-gossip": "^1.0.1",
     "ssb-keys": "^7.1.3",

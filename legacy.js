@@ -1,25 +1,21 @@
 var pull = require('pull-stream')
-var pullNext = require('pull-next')
-var para = require('pull-paramap')
 var Notify = require('pull-notify')
 var Cat = require('pull-cat')
 var Debounce = require('observ-debounce')
 var deepEqual = require('deep-equal')
-var Obv = require('obv')
 var isFeed = require('ssb-ref').isFeed
 var Pushable = require('pull-pushable')
 var detectSync = require('./detect-sync')
 
 // compatibility function for old implementations of `latestSequence`
-function toSeq (s) {
-  return 'number' === typeof s ? s : s.sequence
-}
+// function toSeq (s) {
+//   return 'number' === typeof s ? s : s.sequence
+// }
+// function last (a) { return a[a.length - 1] }
 
 function isObject (o) {
   return o && 'object' == typeof o
 }
-
-function last (a) { return a[a.length - 1] }
 
 // if one of these shows up in a replication stream, the stream is dead
 var streamErrors = {
@@ -32,6 +28,7 @@ var streamErrors = {
   'write ECONNRESET': true,
   'write EPIPE': true,
   'stream is closed': true, // rpc method called after stream ended
+  'parent stream is closing': true
 }
 
 module.exports = function (ssbServer, notify, config) {
@@ -412,4 +409,3 @@ module.exports = function (ssbServer, notify, config) {
     }
   }
 }
-

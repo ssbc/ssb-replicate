@@ -155,8 +155,6 @@ module.exports = function (ssbServer, notify, config) {
     })
   )
 
-  var peers = {}
-
   ssbServer.createHistoryStream.hook(function (fn, args) {
     var upto = args[0] || {}, remote_id = this.id
     var stream
@@ -246,9 +244,6 @@ module.exports = function (ssbServer, notify, config) {
     if (!ssbServer.ready()) return
 
     var errorsSeen = {}
-    //check for local peers, or manual connections.
-    localPeers()
-
     var drain
 
     function replicate(upto, cb) {
@@ -256,8 +251,6 @@ module.exports = function (ssbServer, notify, config) {
       pendingFeedsForPeer[rpc.id].add(upto.id)
 
       debounce.set()
-
-      var sync = false
 
       pull(
         rpc.createHistoryStream({
@@ -268,7 +261,6 @@ module.exports = function (ssbServer, notify, config) {
         }),
 
         pull.through(detectSync(rpc.id, upto, toSend, peerHas, function () {
-          sync = true
           if (pendingFeedsForPeer[rpc.id]) {
             // this peer has finished syncing, remove from progress
             pendingFeedsForPeer[rpc.id].delete(upto.id)

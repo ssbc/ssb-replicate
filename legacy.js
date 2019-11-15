@@ -225,31 +225,6 @@ module.exports = function (ssbServer, notify, config) {
   opts.live = true
   opts.meta = true
 
-  //XXX policy about replicating specific peers should be outside
-  //of this plugin.
-  function localPeers () {
-    if(!ssbServer.gossip) return
-    ssbServer.gossip.peers().forEach(function (e) {
-      if (e.source === 'local')
-        request(e.key)
-    })
-  }
-
-  //also request local peers.
-  if (ssbServer.gossip) {
-    // if we have the gossip plugin active, then include new local peers
-    // so that you can put a name to someone on your local network.
-    var int = setInterval(localPeers, 1000)
-    if(int.unref) int.unref()
-    localPeers()
-  }
-
-  ssbServer.close.hook(function (fn, args) {
-    clearInterval(int)
-    return fn.apply(this, args)
-  })
-  //XXX ^
-
   function upto (opts) {
     opts = opts || {}
     var ary = Object.keys(replicate).map(function (k) {

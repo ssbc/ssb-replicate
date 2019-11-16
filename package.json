@@ -1,7 +1,7 @@
 {
   "name": "ssb-replicate",
   "description": "",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "homepage": "https://github.com/dominictarr/ssb-replicate",
   "repository": {
     "type": "git",
@@ -20,13 +20,13 @@
     "ssb-ref": "^2.13.9"
   },
   "devDependencies": {
-    "cat-names": "^2.0.0",
+    "cat-names": "^3.0.0",
     "cont": "^1.0.3",
-    "dog-names": "^1.0.2",
+    "dog-names": "^2.0.0",
     "ssb-friends": "^4.0.0",
     "ssb-gossip": "^1.0.1",
-    "ssb-keys": "^7.1.3",
-    "ssb-server": "^13.5.2",
+    "ssb-keys": "^7.2.0",
+    "ssb-server": "https://github.com/jedahan/ssb-server#3a6a6261f6bb408346fe139d645f913cb58a1419",
     "tape": "^4.9.2"
   },
   "scripts": {

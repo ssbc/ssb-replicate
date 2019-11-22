@@ -155,8 +155,6 @@ module.exports = function (ssbServer, notify, config) {
     })
   )
 
-  var peers = {}
-
   ssbServer.createHistoryStream.hook(function (fn, args) {
     var upto = args[0] || {}, remote_id = this.id
     var stream
@@ -225,31 +223,6 @@ module.exports = function (ssbServer, notify, config) {
   opts.live = true
   opts.meta = true
 
-  //XXX policy about replicating specific peers should be outside
-  //of this plugin.
-  function localPeers () {
-    if(!ssbServer.gossip) return
-    ssbServer.gossip.peers().forEach(function (e) {
-      if (e.source === 'local')
-        request(e.key)
-    })
-  }
-
-  //also request local peers.
-  if (ssbServer.gossip) {
-    // if we have the gossip plugin active, then include new local peers
-    // so that you can put a name to someone on your local network.
-    var int = setInterval(localPeers, 1000)
-    if(int.unref) int.unref()
-    localPeers()
-  }
-
-  ssbServer.close.hook(function (fn, args) {
-    clearInterval(int)
-    return fn.apply(this, args)
-  })
-  //XXX ^
-
   function upto (opts) {
     opts = opts || {}
     var ary = Object.keys(replicate).map(function (k) {
@@ -271,9 +244,6 @@ module.exports = function (ssbServer, notify, config) {
     if (!ssbServer.ready()) return
 
     var errorsSeen = {}
-    //check for local peers, or manual connections.
-    localPeers()
-
     var drain
 
     function replicate(upto, cb) {
@@ -281,8 +251,6 @@ module.exports = function (ssbServer, notify, config) {
       pendingFeedsForPeer[rpc.id].add(upto.id)
 
       debounce.set()
-
-      var sync = false
 
       pull(
         rpc.createHistoryStream({
@@ -293,7 +261,6 @@ module.exports = function (ssbServer, notify, config) {
         }),
 
         pull.through(detectSync(rpc.id, upto, toSend, peerHas, function () {
-          sync = true
           if (pendingFeedsForPeer[rpc.id]) {
             // this peer has finished syncing, remove from progress
             pendingFeedsForPeer[rpc.id].delete(upto.id)

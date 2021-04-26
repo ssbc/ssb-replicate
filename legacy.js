@@ -285,7 +285,7 @@ module.exports = function (ssbServer, notify, config) {
             } else {
               console.error(
                 'Error replicating with ' + rpc.id + ':\n  ',
-                err.stack
+                err
               )
             }
           }

@@ -1,5 +1,14 @@
 # ssb-replicate
 
+:warning:
+
+**NOTE: This package has been deprecated in favor of [ssb-replication-scheduler](https://github.com/ssb-ngi-pointer/ssb-replication-scheduler)
+We highly recommend not using ssb-replicate because its performance is significantly worse.**
+
+:warning:
+
+-------
+
 ssb legacy replication. this was previously built into `ssb-server` (formerly known as `scuttlebot`)
 
 ## protocol

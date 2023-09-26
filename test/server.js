@@ -1,45 +1,45 @@
+const cont = require('cont')
+const deepEqual = require('deep-equal')
+const tape = require('tape')
+const ssbKeys = require('ssb-keys')
 
-var cont      = require('cont')
-var deepEqual = require('deep-equal')
-var tape      = require('tape')
-var pull      = require('pull-stream')
-var ssbKeys   = require('ssb-keys')
-
-var u = require('./util')
+const u = require('./util')
 
 // create 3 servers
 // give them all pub servers (on localhost)
 // and get them to follow each other...
 
-var createSsbServer = (config) => u.testbot({
+const createSsbServer = (config) => u.testbot({
   ...config,
   gossip: true
 })
 
 tape('replicate between 3 peers', function (t) {
-
-  var alice, bob, carol
-  var dbA = createSsbServer({
+  let alice, bob, carol
+  const dbA = createSsbServer({
     name: 'server-alice',
-    port: 45451, timeout: 1400,
-    keys: alice = ssbKeys.generate(),
+    port: 45451,
+    timeout: 1400,
+    keys: alice = ssbKeys.generate()
   })
-  var dbB = createSsbServer({
+  const dbB = createSsbServer({
     name: 'server-bob',
-    port: 45452, timeout: 1400,
+    port: 45452,
+    timeout: 1400,
     keys: bob = ssbKeys.generate(),
-    seeds: [dbA.getAddress()],
+    seeds: [dbA.getAddress()]
   })
-  var dbC = createSsbServer({
+  const dbC = createSsbServer({
     name: 'server-carol',
-    port: 45453, timeout: 1400,
+    port: 45453,
+    timeout: 1400,
     keys: carol = ssbKeys.generate(),
-    seeds: [dbA.getAddress()],
+    seeds: [dbA.getAddress()]
   })
 
-  var apub = cont(dbA.publish)
-  var bpub = cont(dbB.publish)
-  var cpub = cont(dbC.publish)
+  const apub = cont(dbA.publish)
+  const bpub = cont(dbB.publish)
+  const cpub = cont(dbC.publish)
 
   cont.para([
     apub(u.pub(dbA.getAddress())),
@@ -54,35 +54,34 @@ tape('replicate between 3 peers', function (t) {
 
     cpub(u.follow(alice.id)),
     cpub(u.follow(bob.id))
-  ]) (function (err, ary) {
-    if(err) throw err
+  ])(function (err, ary) {
+    if (err) throw err
 
-    var expected = {}
+    const expected = {}
     expected[alice.id] = expected[bob.id] = expected[carol.id] = 3
 
-    function check(server, name) {
-      var closed = false
+    function check (server, name) {
+      let closed = false
       return server.on('replicate:finish', function (actual) {
         console.log(actual)
-        if(deepEqual(expected, actual) && !closed) {
+        if (deepEqual(expected, actual) && !closed) {
           closed = true
           done()
         }
       })
     }
 
-    var serverA = check(dbA, 'ALICE')
-    var serverB = check(dbB, 'BOB')
-    var serverC = check(dbC, 'CAROL')
+    check(dbA, 'ALICE')
+    check(dbB, 'BOB')
+    check(dbC, 'CAROL')
 
-    var n = 2
+    let n = 2
 
     function done () {
-      if(--n) return
+      if (--n) return
       dbA.close(true); dbB.close(true); dbC.close(true)
       t.ok(true)
       t.end()
     }
   })
 })
-

@@ -1,35 +1,31 @@
-var cont = require('cont')
-var tape = require('tape')
-var pull = require('pull-stream')
-var ssbKeys = require('ssb-keys')
-var u = require('./util')
+const cont = require('cont')
+const tape = require('tape')
+const ssbKeys = require('ssb-keys')
+const u = require('./util')
 
-var createSsbServer = u.testbot
+const createSsbServer = u.testbot
 
-var alice = createSsbServer({
-    name: 'test-block-alice-2', //timeout: 1400,
-    keys: ssbKeys.generate()
-  })
+const alice = createSsbServer({
+  name: 'test-block-alice-2', // timeout: 1400,
+  keys: ssbKeys.generate()
+})
 
-var bob = createSsbServer({
-    name: 'test-block-bob-2', //timeout: 600,
-    keys: ssbKeys.generate()
-  })
+const bob = createSsbServer({
+  name: 'test-block-bob-2', // timeout: 600,
+  keys: ssbKeys.generate()
+})
 
 tape('alice blocks bob while he is connected, she should disconnect him', function (t) {
-
-  //in the beginning alice and bob follow each other
+  // in the beginning alice and bob follow each other
   cont.para([
     cont(alice.publish)(u.follow(bob.id)),
     cont(bob.publish)(u.follow(alice.id))
-  ]) (function (err) {
-    if(err) throw err
-
-    var n = 3, rpc
+  ])(function (err) {
+    if (err) throw err
 
     bob.connect(alice.getAddress(), function (err, rpc) {
-      if(err) throw err
-      //replication will begin immediately.
+      if (err) throw err
+      // replication will begin immediately.
     })
 
     bob.on('replicate:finish', function (vclock) {
@@ -40,22 +36,19 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
       t.end()
     })
 
-    var once = false
-    var bobCancel = bob.post(function (op) {
+    let once = false
+    bob.post(function (op) {
       if (op.value.author === bob.id) {
         console.log('ignore ' + op.value.content.type)
         return
       }
       console.log('BOB RECV', op)
-      if(once) throw new Error('should only be called once')
+      if (once) throw new Error('should only be called once')
       once = true
-      //should be the alice's follow(bob) message.
+      // should be the alice's follow(bob) message.
 
       t.equal(op.value.content.contact, bob.id)
-      cont(alice.publish)(u.block(bob.id))
-      (function (err) { if(err) throw err })
+      cont(alice.publish)(u.block(bob.id))(err => { if (err) throw err })
     }, false)
-
   })
 })
-

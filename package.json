@@ -8,7 +8,7 @@
     "url": "git://github.com/dominictarr/ssb-replicate.git"
   },
   "scripts": {
-    "test": "npm run test:js",
+    "test": "npm run test:js && npm run lint",
     "test:js": "tape test/*.js | tap-arc",
     "lint": "standard --fix"
   },
@@ -32,6 +32,7 @@
     "ssb-friends": "^4.4.9",
     "ssb-gossip": "^1.1.1",
     "ssb-keys": "^7.2.2",
+    "standard": "^17.1.0",
     "tap-arc": "^1.0.1",
     "tape": "^4.17.0"
   },

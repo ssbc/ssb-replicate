@@ -57,7 +57,7 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
 
     let once = false
     bob.post(function (op) {
-      console.log('BOB RECV', op, bob.id)
+      // console.log('BOB RECV', op, bob.id)
       if (once) throw new Error('should only be called once')
       once = true
       // should be the alice's follow(bob) message.

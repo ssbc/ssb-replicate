@@ -46,11 +46,6 @@ const carol = createSsbServer({
 
 })
 
-const names = {}
-names[alice.id] = 'alice'
-names[bob.id] = 'bob'
-names[carol.id] = 'carol'
-
 tape('alice blocks bob, and bob cannot connect to alice', function (t) {
   // in the beginning alice and bob follow each other
   cont.para([
@@ -59,8 +54,9 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
     cont(carol.publish)(u.follow(alice.id))
   ])(function (err) {
     if (err) throw err
-    let n = 3; let rpc
 
+    let n = 3
+    let rpc
     bob.connect(alice.getAddress(), function (err, _rpc) {
       if (err) throw err
       // replication will begin immediately.
@@ -83,8 +79,9 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
       t.equal(op.value.content.contact, alice.id, 'alice expected received message to be about alice')
       next()
     }), false)
+
     function next () {
-      if (--n) return
+      if (--n > 0) return
 
       rpc.close(true, function () {
         aliceCancel(); bobCancel()
@@ -107,7 +104,7 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
               }),
               pull.collect(function (err, ary) {
                 if (err) throw err
-                console.log(ary)
+                // console.log(ary)
                 t.ok(ary.pop().value.content.flagged, 'alice did block bob')
 
                 // since bob is blocked, he should not be able to connect
@@ -131,7 +128,7 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
                           if (err) throw err
 
                           t.ok(ary.length, 'carol replicated data from alice')
-                          console.log(alice.id, carol.id, err, ary)
+                          // console.log(alice.id, carol.id, err, ary)
                           t.end()
                         })
                       )
@@ -163,13 +160,14 @@ tape('carol does not let bob replicate with alice', function (t) {
 })
 
 tape('alice does not replicate messages from bob, but carol does', function (t) {
-  console.log('**********************************************************')
   let friends = 0
-  carol.friends.get(console.log)
-  pull(carol.friends.createFriendStream({ meta: true, live: true }), pull.drain(function (v) {
-    friends++
-    console.log('************', v)
-  }))
+  pull(
+    carol.friends.createFriendStream({ meta: true, live: true }),
+    pull.drain(v => {
+      console.log(v)
+      friends++
+    })
+  )
 
   cont.para([
     cont(alice.publish)(u.follow(carol.id)),
@@ -186,12 +184,12 @@ tape('alice does not replicate messages from bob, but carol does', function (t) 
     alice.post(function (msg) {
       recv.alice++
       // alice will only receive the message from carol, but not bob.
-      t.equal(msg.value.author, carol.id)
+      t.equal(msg.value.author, carol.id, 'alice reveives a message from carol')
     }, false)
 
     carol.friends.get(function (err, g) {
       if (err) throw err
-      t.ok(g[carol.id][bob.id])
+      t.ok(g[carol.id][bob.id], 'carol has data on bob')
     })
 
     let n = 2
@@ -203,16 +201,16 @@ tape('alice does not replicate messages from bob, but carol does', function (t) 
       rpc.on('closed', next)
     }
     function next () {
-      if (--n) return
+      if (--n > 0) return
       pull(
         carol.createLogStream(),
         pull.collect(function (err, ary) {
           if (err) throw err
           carol.getVectorClock(function (err, vclock) {
             if (err) throw err
-            t.equals(vclock[alice.id], 3)
-            t.equals(vclock[bob.id], 2)
-            t.equals(vclock[carol.id], 2)
+            t.equals(vclock[alice.id], 3, 'carol has correct alice clock')
+            t.equals(vclock[bob.id], 2, 'carol has correct bob clock')
+            t.equals(vclock[carol.id], 2, 'carol has correct carcol clock')
 
             t.equal(friends, 3, "carol's createFriendStream has 3 peers")
             t.end()

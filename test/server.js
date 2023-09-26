@@ -63,7 +63,7 @@ tape('replicate between 3 peers', function (t) {
     function check (server, name) {
       let closed = false
       return server.on('replicate:finish', function (actual) {
-        console.log(actual)
+        // console.log(actual)
         if (deepEqual(expected, actual) && !closed) {
           closed = true
           done()

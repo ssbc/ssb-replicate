@@ -37,7 +37,7 @@ tape('replicate between 3 peers', function (t) {
     pull(
       bob.createHistoryStream({ id: alice.id, seq: 0, keys: false, live: true }),
       pull.drain(function (data) {
-        console.log(data)
+        // console.log(data)
         ary.push(data)
       })
     )

@@ -29,7 +29,7 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
     })
 
     bob.on('replicate:finish', function (vclock) {
-      console.log(vclock)
+      // console.log(vclock)
       t.equal(vclock[alice.id], 1)
       alice.close()
       bob.close()
@@ -42,7 +42,7 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
         console.log('ignore ' + op.value.content.type)
         return
       }
-      console.log('BOB RECV', op)
+      // console.log('BOB RECV', op)
       if (once) throw new Error('should only be called once')
       once = true
       // should be the alice's follow(bob) message.

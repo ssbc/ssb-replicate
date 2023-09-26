@@ -11,27 +11,27 @@ var u = require('./util')
 // give them all pub servers (on localhost)
 // and get them to follow each other...
 
-var createSsbServer = require('ssb-server')
-  .use(require('..'))
-  .use(require('ssb-friends'))
-  .use(require('ssb-gossip'))
+var createSsbServer = (config) => u.testbot({
+  ...config,
+  gossip: true
+})
 
 tape('replicate between 3 peers', function (t) {
 
   var alice, bob, carol
   var dbA = createSsbServer({
-    temp: 'server-alice',
+    name: 'server-alice',
     port: 45451, timeout: 1400,
     keys: alice = ssbKeys.generate(),
   })
   var dbB = createSsbServer({
-    temp: 'server-bob',
+    name: 'server-bob',
     port: 45452, timeout: 1400,
     keys: bob = ssbKeys.generate(),
     seeds: [dbA.getAddress()],
   })
   var dbC = createSsbServer({
-    temp: 'server-carol',
+    name: 'server-carol',
     port: 45453, timeout: 1400,
     keys: carol = ssbKeys.generate(),
     seeds: [dbA.getAddress()],

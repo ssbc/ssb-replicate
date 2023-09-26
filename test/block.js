@@ -4,9 +4,7 @@ var pull = require('pull-stream')
 var ssbKeys = require('ssb-keys')
 var u = require('./util')
 
-var createSsbServer = require('ssb-server')
-  .use(require('..'))
-  .use(require('ssb-friends'))
+var createSsbServer = u.testbot
 
 function once (fn) {
   var called = 0
@@ -30,17 +28,17 @@ function seed (name) {
 }
 
 var alice = createSsbServer({
-  temp:'test-block-alice', timeout: 1400,
+  name:'test-block-alice', timeout: 1400,
   keys:ssbKeys.generate(null, seed('alice')),
 })
 
 var bob = createSsbServer({
-  temp: 'test-block-bob', timeout: 600,
+  name: 'test-block-bob', timeout: 600,
   keys:ssbKeys.generate(null, seed('bob')),
 })
 
 var carol = createSsbServer({
-  temp: 'test-block-carol', timeout: 600,
+  name: 'test-block-carol', timeout: 600,
   keys:ssbKeys.generate(null, seed('carol')),
 
 })

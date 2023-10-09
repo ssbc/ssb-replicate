@@ -4,17 +4,15 @@ var pull = require('pull-stream')
 var ssbKeys = require('ssb-keys')
 var u = require('./util')
 
-var createSsbServer = require('ssb-server')
-    .use(require('..'))
-    .use(require('ssb-friends'))
+var createSsbServer = u.testbot
 
 var alice = createSsbServer({
-    temp: 'test-block-alice', //timeout: 1400,
+    name: 'test-block-alice-2', //timeout: 1400,
     keys: ssbKeys.generate()
   })
 
 var bob = createSsbServer({
-    temp: 'test-block-bob', //timeout: 600,
+    name: 'test-block-bob-2', //timeout: 600,
     keys: ssbKeys.generate()
   })
 
@@ -23,7 +21,7 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
   //in the beginning alice and bob follow each other
   cont.para([
     cont(alice.publish)(u.follow(bob.id)),
-    cont(bob  .publish)(u.follow(alice.id))
+    cont(bob.publish)(u.follow(alice.id))
   ]) (function (err) {
     if(err) throw err
 
@@ -44,6 +42,10 @@ tape('alice blocks bob while he is connected, she should disconnect him', functi
 
     var once = false
     var bobCancel = bob.post(function (op) {
+      if (op.value.author === bob.id) {
+        console.log('ignore ' + op.value.content.type)
+        return
+      }
       console.log('BOB RECV', op)
       if(once) throw new Error('should only be called once')
       once = true

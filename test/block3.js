@@ -12,22 +12,20 @@ var ssbKeys = require('ssb-keys')
 // 2. alice never tries to connect to bob. (removed from peers)
 // 3. carol will not give bob any, she will not give him any data from alice.
 
-var createSsbServer = require('ssb-server')
-    .use(require('..'))
-    .use(require('ssb-friends'))
+var createSsbServer = u.testbot
 
 var alice = createSsbServer({
-    temp: 'test-block-alice', timeout: 1000,
+    name: 'test-block-alice-3', timeout: 1000,
     keys: ssbKeys.generate()
   })
 
 var bob = createSsbServer({
-    temp: 'test-block-bob', timeout: 1000,
+    name: 'test-block-bob-3', timeout: 1000,
     keys: ssbKeys.generate()
   })
 
 var carol = createSsbServer({
-    temp: 'test-block-carol', timeout: 1000,
+    name: 'test-block-carol-3', timeout: 1000,
     keys: ssbKeys.generate()
   })
 

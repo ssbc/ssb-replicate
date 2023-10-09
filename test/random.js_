@@ -38,10 +38,10 @@ function once (fn) {
   }
 }
 
-var createSsbServer = require('ssb-server')
-  .use(require('..'))
-  .use(require('ssb-friends'))
-  .use(require('ssb-gossip'))
+var createSsbServer = (config) => u.testbot({
+  ...config,
+  gossip: true
+})
 
 function generateAnimals (ssbServer, feed, f, n, cb) {
   var a = [feed]
@@ -132,7 +132,7 @@ function latest (ssbServer, cb) {
   var bob   = ssbKeys.generate()
 
 var animalNetwork = createSsbServer({
-  temp: 'replicate_test-random-animals',
+  name: 'replicate_test-random-animals',
   port: 45451, host: 'localhost', timeout: 20001,
   replicate: {hops: 3, legacy: true}, keys: alice
 })
@@ -181,7 +181,7 @@ tape('read all history streams', function (t) {
   }
 
   var dump = createSsbServer({
-    temp: 'replicate_test-random-animals_dump',
+    name: 'replicate_test-random-animals_dump',
 //    port: 45453, host: 'localhost', timeout: 20001,
     keys: bob
   })
@@ -236,7 +236,7 @@ tape('replicate social network for animals', function (t) {
 
   var start = Date.now()
   var animalFriends = createSsbServer({
-    temp: 'replicate_test-random-animals2',
+    name: 'replicate_test-random-animals2',
     port: 45452, host: 'localhost', timeout: 20001,
     replicate: {hops: 10, legacy: true},
     progress: true,

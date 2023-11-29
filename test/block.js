@@ -8,9 +8,15 @@ const createSsbServer = u.testbot
 
 function once (fn) {
   let called = 0
-  return function () {
+  return function (...args) {
     if (called++) throw new Error('called :' + called + ' times!')
-    return fn.apply(this, arguments)
+    return fn.apply(this, args)
+  }
+}
+
+function delay (t) {
+  return function delayed (fn, ...args) {
+    setTimeout(fn, t, ...args)
   }
 }
 
@@ -43,15 +49,18 @@ const carol = createSsbServer({
   name: 'test-block-carol',
   timeout: 600,
   keys: ssbKeys.generate(null, seed('carol'))
-
 })
+const peers = [alice, bob, carol]
 
 tape('alice blocks bob, and bob cannot connect to alice', function (t) {
-  // in the beginning alice and bob follow each other
   cont.para([
     cont(alice.publish)(u.follow(bob.id)),
     cont(bob.publish)(u.follow(alice.id)),
-    cont(carol.publish)(u.follow(alice.id))
+    cont(carol.publish)(u.follow(alice.id)),
+    // alice: { follows: [bob],   blocks: [] }
+    // bob:   { follows: [alice], blocks: [] }
+    // carol: { follows: [alice], blocks: [] }
+    (cb) => setTimeout(cb, 500) // give db, indexes a moment to catch up
   ])(function (err) {
     if (err) throw err
 
@@ -84,13 +93,17 @@ tape('alice blocks bob, and bob cannot connect to alice', function (t) {
       if (--n > 0) return
 
       rpc.close(true, function () {
-        aliceCancel(); bobCancel()
+        aliceCancel()
+        bobCancel()
         cont(alice.publish)(u.block(bob.id))(err => {
+          // alice: { follows: [],      blocks: [bob] }
+          // bob:   { follows: [alice], blocks: [] }
+          // carol: { follows: [alice], blocks: [] }
           if (err) throw err
 
-          alice.friends.get(null, function (err, g) {
+          delay(100)(alice.friends.get, null, function (err, g) {
             if (err) throw err
-            t.equal(g[alice.id][bob.id], false)
+            t.equal(g[alice.id][bob.id], false, 'alice doesnt follow bob')
 
             pull(
               alice.links({
@@ -162,23 +175,36 @@ tape('carol does not let bob replicate with alice', function (t) {
 tape('alice does not replicate messages from bob, but carol does', function (t) {
   let friends = 0
   pull(
-    carol.friends.createFriendStream({ meta: true, live: true }),
+    carol.friends.hopStream({ meta: true, live: true }),
     pull.drain(v => {
+      // const peer = peers.find(peer => peer.id === v.id)
+      // v.name = peer.name
       console.log(v)
       friends++
     })
   )
+  cont(carol.publish)(u.follow(bob.id))
+  // WIP test hopStream is listening to your own messages!
 
   cont.para([
+    (cb) => setTimeout(cb, 500), // slowdown
     cont(alice.publish)(u.follow(carol.id)),
     cont(bob.publish)({ type: 'post', text: 'hello' }),
-    cont(carol.publish)(u.follow(bob.id))
+    cont(carol.publish)(u.follow(bob.id)),
+    // alice: { follows: [carol],      blocks: [bob] }
+    // bob:   { follows: [alice],      blocks: [] }
+    // carol: { follows: [alice, bob], blocks: [] }
+    (cb) => setTimeout(cb, 500) // slowdown
   ])(function (err, r) {
     if (err) throw err
     const recv = { alice: 0, carol: 0 }
     carol.post(function (msg) {
       recv.carol++
-      // will receive one message from bob and carol
+      // will receive one message from bob and alice
+      if (msg.value.author === alice.id) t.pass('carol reveives a message from alice')
+      else if (msg.value.author === bob.id) t.pass('carol receives a message from bob')
+      else t.fail('carol receives unknown author')
+      // WIP
     }, false)
 
     alice.post(function (msg) {
@@ -186,11 +212,6 @@ tape('alice does not replicate messages from bob, but carol does', function (t) 
       // alice will only receive the message from carol, but not bob.
       t.equal(msg.value.author, carol.id, 'alice reveives a message from carol')
     }, false)
-
-    carol.friends.get(function (err, g) {
-      if (err) throw err
-      t.ok(g[carol.id][bob.id], 'carol has data on bob')
-    })
 
     let n = 2
     carol.connect(alice.getAddress(), cb)
@@ -202,21 +223,27 @@ tape('alice does not replicate messages from bob, but carol does', function (t) 
     }
     function next () {
       if (--n > 0) return
-      pull(
-        carol.createLogStream(),
-        pull.collect(function (err, ary) {
-          if (err) throw err
-          carol.getVectorClock(function (err, vclock) {
-            if (err) throw err
-            t.equals(vclock[alice.id], 3, 'carol has correct alice clock')
-            t.equals(vclock[bob.id], 2, 'carol has correct bob clock')
-            t.equals(vclock[carol.id], 2, 'carol has correct carcol clock')
 
-            t.equal(friends, 3, "carol's createFriendStream has 3 peers")
-            t.end()
+      delay(500)(carol.friends.get, function (err, g) {
+        if (err) throw err
+        t.equal(g[carol.id][bob.id], true, 'carol follows bob')
+
+        pull(
+          carol.createLogStream(),
+          pull.collect(function (err, ary) {
+            if (err) throw err
+            carol.getVectorClock(function (err, vclock) {
+              if (err) throw err
+              t.equals(vclock[alice.id], 3, 'carol has correct alice clock')
+              t.equals(vclock[bob.id], 2, 'carol has correct bob clock')
+              t.equals(vclock[carol.id], 2, 'carol has correct carcol clock')
+
+              t.equal(friends, 3, "carol's createFriendStream has 3 peers")
+              t.end()
+            })
           })
-        })
-      )
+        )
+      })
     }
   })
 })

@@ -1,4 +1,3 @@
-
 module.exports = {
   description: 'legacy replication & stub api for replication',
   commands: {
@@ -52,5 +51,3 @@ module.exports = {
     }
   }
 }
-
-

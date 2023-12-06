@@ -2,8 +2,8 @@ module.exports = function detectSync (peerId, upto, toSend, peerHas, onSync) {
   // HACK: createHistoryStream does not emit sync event, so we don't
   // know when it switches to live. Do it manually!
 
-  var sync = false
-  var last = (upto.sequence || upto.seq || 0)
+  let sync = false
+  let last = (upto.sequence || upto.seq || 0)
 
   // check sync after 500ms, hopefully we have the info from the peer by then
   setTimeout(function () {
@@ -18,8 +18,8 @@ module.exports = function detectSync (peerId, upto, toSend, peerHas, onSync) {
 
   return function (msg) {
     if (!msg) {
-	    //throw new Error("wat")
-	    return false
+      // throw new Error("wat")
+      return false
     }
 
     if (msg.sync) {
@@ -28,7 +28,6 @@ module.exports = function detectSync (peerId, upto, toSend, peerHas, onSync) {
       return false
     }
 
-
     last = msg.sequence
     checkSync()
     return true
@@ -36,7 +35,7 @@ module.exports = function detectSync (peerId, upto, toSend, peerHas, onSync) {
 
   function checkSync () {
     if (!sync) {
-      var availableSeq = peerHas[peerId] && peerHas[peerId][upto.id]
+      const availableSeq = peerHas[peerId] && peerHas[peerId][upto.id]
       if (availableSeq === last || availableSeq < toSend[upto.id]) {
         // we've reached the maximum sequence this server has told us it knows about
         // or we don't need anything from this server

@@ -286,8 +286,10 @@ module.exports = function (ssbServer, notify, config) {
               }
             } else {
               console.error(
-                'Error replicating with ' + rpc.id + ':\n  ',
-                err
+                'Error replicating with ' + rpc.id + ':',
+                err.message === 'no source:createHistoryStream'
+                  ? 'no createHistoryStream' // don't need the full error!
+                  : err
               )
             }
           }
